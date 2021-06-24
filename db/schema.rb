@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_23_203320) do
+ActiveRecord::Schema.define(version: 2021_06_24_230050) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,21 +19,11 @@ ActiveRecord::Schema.define(version: 2021_06_23_203320) do
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-  end
-
-  create_table "companies", force: :cascade do |t|
-    t.string "name"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
-  create_table "coupon_stores", force: :cascade do |t|
-    t.bigint "coupon_id", null: false
-    t.bigint "store_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["coupon_id"], name: "index_coupon_stores_on_coupon_id"
-    t.index ["store_id"], name: "index_coupon_stores_on_store_id"
+    t.decimal "min_coupon_value"
+    t.decimal "max_coupon_value"
+    t.date "earliest_expiration_date"
+    t.date "latest_expiration_date"
+    t.integer "num_products"
   end
 
   create_table "coupons", force: :cascade do |t|
@@ -43,7 +33,26 @@ ActiveRecord::Schema.define(version: 2021_06_23_203320) do
     t.date "expiration_date"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "store_id"
     t.index ["product_id"], name: "index_coupons_on_product_id"
+    t.index ["store_id"], name: "index_coupons_on_store_id"
+  end
+
+  create_table "grocer_brands", force: :cascade do |t|
+    t.bigint "grocer_id", null: false
+    t.bigint "brand_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["brand_id"], name: "index_grocer_brands_on_brand_id"
+    t.index ["grocer_id"], name: "index_grocer_brands_on_grocer_id"
+  end
+
+  create_table "grocers", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "num_brands"
+    t.integer "num_stores"
   end
 
   create_table "products", force: :cascade do |t|
@@ -59,15 +68,17 @@ ActiveRecord::Schema.define(version: 2021_06_23_203320) do
     t.string "city"
     t.string "state"
     t.string "zip"
-    t.bigint "company_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["company_id"], name: "index_stores_on_company_id"
+    t.bigint "grocer_id"
+    t.integer "num_coupons"
+    t.index ["grocer_id"], name: "index_stores_on_grocer_id"
   end
 
-  add_foreign_key "coupon_stores", "coupons"
-  add_foreign_key "coupon_stores", "stores"
   add_foreign_key "coupons", "products"
+  add_foreign_key "coupons", "stores"
+  add_foreign_key "grocer_brands", "brands"
+  add_foreign_key "grocer_brands", "grocers"
   add_foreign_key "products", "brands"
-  add_foreign_key "stores", "companies"
+  add_foreign_key "stores", "grocers"
 end

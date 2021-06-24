@@ -1,0 +1,1 @@
+json.extract! store, :id, :street_address, :grocer, :total_store_savings

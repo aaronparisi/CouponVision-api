@@ -4,20 +4,21 @@
 #
 #  id             :bigint           not null, primary key
 #  city           :string
+#  num_coupons    :integer
 #  state          :string
 #  street_address :string
 #  zip            :string
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
-#  company_id     :bigint           not null
+#  grocer_id      :bigint
 #
 # Indexes
 #
-#  index_stores_on_company_id  (company_id)
+#  index_stores_on_grocer_id  (grocer_id)
 #
 # Foreign Keys
 #
-#  fk_rails_...  (company_id => companies.id)
+#  fk_rails_...  (grocer_id => grocers.id)
 #
 require "test_helper"
 

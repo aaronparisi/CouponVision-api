@@ -21,4 +21,6 @@
 class CouponStore < ApplicationRecord
   belongs_to :coupon
   belongs_to :store
+
+  
 end

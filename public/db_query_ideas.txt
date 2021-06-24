@@ -1,0 +1,8 @@
+1. distribution of brands between grocers (horizontal stacked bar)
+  - want some grocers with only one or two brands
+  - some brands should be limited to a few grocers
+2. proportion of total savings lost, available, within stores of single grocer (nested pies? map?)
+  - be more specific about expiration dates - skew them somehow
+3. number of coupons set to expire within certain timeframes? number of active
+   coupons over time?
+4. most discounted products by brand?

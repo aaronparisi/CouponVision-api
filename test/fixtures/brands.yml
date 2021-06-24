@@ -2,10 +2,15 @@
 #
 # Table name: brands
 #
-#  id         :bigint           not null, primary key
-#  name       :string
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id                       :bigint           not null, primary key
+#  earliest_expiration_date :date
+#  latest_expiration_date   :date
+#  max_coupon_value         :decimal(, )
+#  min_coupon_value         :decimal(, )
+#  name                     :string
+#  num_products             :integer
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
 #
 
 one:
