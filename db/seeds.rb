@@ -12,11 +12,12 @@ require 'roo'
 dataPath = File.join(Rails.root, 'lib', 'Grocery_UPC_Database.xlsx')
 data = Roo::Spreadsheet.open(dataPath)
 
-num_brands = 10
-max_num_products = 5
+num_brands_from_excel = 10
+max_num_brands_per_grocer = 10
+max_num_products = 10
 
-max_num_stores = 5
-max_num_coupons = 5
+max_num_stores = 30
+max_num_coupons = 50
 
 def fakerRand(min, max)
   return Faker::Number.between(from: min, to: max)
@@ -24,7 +25,7 @@ end
 
 # brands
 puts "making brands"
-brand_indices = (1..data.sheet('brands').last_row).to_a.shuffle[0...num_brands]
+brand_indices = (1..data.sheet('brands').last_row).to_a.shuffle[0...num_brands_from_excel]
 brand_indices.each do |brand_idx|
   brand = data.sheet('brands').row(brand_idx)
   min_val = fakerRand(0.1, 50.0)
@@ -38,7 +39,7 @@ brand_indices.each do |brand_idx|
     max_coupon_value: max_val,
     earliest_expiration_date: early_exp,
     latest_expiration_date: late_exp,
-    num_products: max_num_products
+    num_products: fakerRand(1, max_num_products)
   )
 end
 
@@ -61,8 +62,9 @@ puts "making grocers"
 data.sheet('grocers').each_row_streaming(offset: 1) do |grocer|
   Grocer.create(
     name: grocer[1].value,
-    num_brands: fakerRand(1,num_brands),
-    num_stores: fakerRand(1,max_num_stores)
+    num_brands: fakerRand(1,max_num_brands_per_grocer),
+    num_stores: fakerRand(1,max_num_stores),
+    max_num_coupons: fakerRand(0, max_num_coupons)
   )
 end
 
@@ -82,7 +84,7 @@ Grocer.all.each do |grocer|
       city: Faker::Address.city,
       state: Faker::Address.state_abbr,
       zip: Faker::Address.zip_code,
-      num_coupons: fakerRand(0, max_num_coupons)
+      num_coupons: fakerRand(0, grocer.max_num_coupons)
     ).save
   end
 end
@@ -92,8 +94,8 @@ Store.all.each do |store|
   store.num_coupons.times do
     aBrand = store.grocer.brands.sample(1)[0]
     aProduct = aBrand.products.sample(1)[0]
-    exp_date = Faker::Date.between(from: aBrand.earliest_expiration_date, to: aBrand.latest_expiration_date),
-
+    exp_date = Faker::Date.between(from: aBrand.earliest_expiration_date, to: aBrand.latest_expiration_date)
+  
     store.coupons.build(
       cash_value: fakerRand(aBrand.min_coupon_value, aBrand.max_coupon_value),
       savings: fakerRand(aBrand.min_coupon_value, aBrand.max_coupon_value),

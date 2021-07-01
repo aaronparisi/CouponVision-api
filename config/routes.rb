@@ -20,7 +20,10 @@ Rails.application.routes.draw do
     end
 
     resources :grocers do
-      
+      collection do
+        get 'coupon_counts_by_brand_per_grocer', to: 'grocers#coupon_counts_by_brand'
+        get 'coupons_by_brand_per_grocer', to: 'grocers#coupons_by_brand'
+      end
     end
 
     resources :products do

@@ -24,4 +24,8 @@
 class Coupon < ApplicationRecord
   belongs_to :product
   belongs_to :store
+
+  def brand
+    self.product.brand
+  end
 end

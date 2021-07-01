@@ -14,6 +14,7 @@
 #
 class Brand < ApplicationRecord
   has_many :products
+  has_many :coupons, through: :products, source: :coupons
 
   has_many :grocer_brands
   has_many :grocers, through: :grocer_brands, source: :grocer

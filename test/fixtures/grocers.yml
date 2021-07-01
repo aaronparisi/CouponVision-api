@@ -2,12 +2,13 @@
 #
 # Table name: grocers
 #
-#  id         :bigint           not null, primary key
-#  name       :string
-#  num_brands :integer
-#  num_stores :integer
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id              :bigint           not null, primary key
+#  max_num_coupons :integer
+#  name            :string
+#  num_brands      :integer
+#  num_stores      :integer
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
 #
 
 one:
