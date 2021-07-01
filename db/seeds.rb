@@ -46,6 +46,7 @@ end
 # products from included brands only
 puts "making products"
 Brand.all.each do |brand|
+  puts "making products for brand #{brand.name}"
   product_indices = (1..data.sheet('products').last_row)
     .to_a
     .filter { |idx| brand.name === data.sheet('products').row(idx)[1] }
