@@ -2,11 +2,11 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     origins 'http://localhost:8080', 
       'http://localhost:5000',
-      'http://localhost:8000'
-      # 'https://springfield-bnb.aaronparisidev.com',
-      # 'http://springfield-bnb.aaronparisidev.com',
-      # 'https://www.springfield-bnb.aaronparisidev.com',
-      # 'http://www.springfield-bnb.aaronparisidev.com'
+      'http://localhost:8000',
+      'https://coupons.aaronparisidev.com',
+      'http://coupons.aaronparisidev.com',
+      'https://www.coupons.aaronparisidev.com',
+      'http://www.coupons.aaronparisidev.com'
 
     resource '*',
       headers: :any,
