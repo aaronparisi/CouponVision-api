@@ -10,6 +10,7 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #
+
 class Grocer < ApplicationRecord
   has_many :stores
   has_many :coupons, through: :stores, source: :coupons
