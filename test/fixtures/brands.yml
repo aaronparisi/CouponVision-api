@@ -3,8 +3,9 @@
 # Table name: brands
 #
 #  id                       :bigint           not null, primary key
-#  earliest_expiration_date :date
-#  latest_expiration_date   :date
+#  earliest_activation_date :date
+#  latest_activation_date   :date
+#  max_activation_days      :integer
 #  max_coupon_value         :decimal(, )
 #  min_coupon_value         :decimal(, )
 #  name                     :string

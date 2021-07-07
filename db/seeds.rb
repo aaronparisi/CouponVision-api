@@ -19,6 +19,8 @@ max_num_products = 10
 max_num_stores = 30
 max_num_coupons = 50
 
+days_from_now = 1000
+
 def fakerRand(min, max)
   return Faker::Number.between(from: min, to: max)
 end
@@ -30,15 +32,18 @@ brand_indices.each do |brand_idx|
   brand = data.sheet('brands').row(brand_idx)
   min_val = fakerRand(0.1, 50.0)
   max_val = fakerRand(min_val, 50.0)
-  early_exp = Faker::Date.between(from: 500.days.ago, to: 500.days.from_now)
-  late_exp = Faker::Date.between(from: early_exp, to: 500.days.from_now)
+  early_act = Faker::Date.between(from: days_from_now.days.ago, to: days_from_now.days.from_now)
+  late_act = Faker::Date.between(from: early_act, to: days_from_now.days.from_now)
+
+  max_activation_days = Faker::Number.between(from: 7, to: 500)
 
   Brand.create(
     name: brand[0], 
     min_coupon_value: min_val,
     max_coupon_value: max_val,
-    earliest_expiration_date: early_exp,
-    latest_expiration_date: late_exp,
+    earliest_activation_date: early_act,
+    latest_activation_date: late_act,
+    max_activation_days: max_activation_days,
     num_products: fakerRand(1, max_num_products)
   )
 end
@@ -95,11 +100,13 @@ Store.all.each do |store|
   store.num_coupons.times do
     aBrand = store.grocer.brands.sample(1)[0]
     aProduct = aBrand.products.sample(1)[0]
-    exp_date = Faker::Date.between(from: aBrand.earliest_expiration_date, to: aBrand.latest_expiration_date)
+    act_date = Faker::Date.between(from: aBrand.earliest_activation_date, to: aBrand.latest_activation_date)
+    exp_date = Faker::Date.between(from: act_date, to: act_date + aBrand.max_activation_days.days)
   
     store.coupons.build(
       cash_value: fakerRand(aBrand.min_coupon_value, aBrand.max_coupon_value),
       savings: fakerRand(aBrand.min_coupon_value, aBrand.max_coupon_value),
+      activation_date: act_date,
       expiration_date: exp_date,
       product_id: aProduct.id
     ).save

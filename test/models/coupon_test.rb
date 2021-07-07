@@ -3,6 +3,7 @@
 # Table name: coupons
 #
 #  id              :bigint           not null, primary key
+#  activation_date :date
 #  cash_value      :decimal(, )
 #  expiration_date :date
 #  savings         :decimal(, )

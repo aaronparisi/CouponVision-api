@@ -18,6 +18,7 @@ class Grocer < ApplicationRecord
   has_many :grocer_brands
   has_many :brands, through: :grocer_brands, source: :brand
 
+  ## for counts per brand stacked bar chart
   def self.coupon_counts_by_brand
     # self.coupons.joins(product: [:brand]).group(:brand_id).count(:id)
     query = <<-SQL
@@ -57,13 +58,14 @@ class Grocer < ApplicationRecord
     return ret
   end
 
+  ## for active coupons over time line chart
   def coupons_by_brand
     self
       .coupons
       .joins(product: [:brand])
       .order(:expiration_date)
-      .pluck(:id, :brand_id, :expiration_date)
-      .map { |coupon| { id: coupon[0], brand_id: coupon[1], expiration_date: coupon[2] }}
+      .pluck(:id, :brand_id, :activation_date, :expiration_date)
+      .map { |coupon| { id: coupon[0], brand_id: coupon[1], activation_date: coupon[2], expiration_date: coupon[3] }}
   end
 end
 
