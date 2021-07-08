@@ -23,7 +23,23 @@ class Grocer < ApplicationRecord
 
   ## for counts per brand stacked bar chart
   def self.coupon_counts_by_brand
-    # self.coupons.joins(product: [:brand]).group(:brand_id).count(:id)
+    ## the goal here is to return a set of data consisting of
+    ## arrays of objects
+    ## each object represents a grocer
+    ## and will have keys for grocer name,
+    ## as well as a key-value pair representing each brand id
+    ## and corresponding coupon count for said grocer
+    ## e.g.
+    ## [{ 1: 5, 2: 0, grocer_name: "Albertson's" }, { 1: 1, 2: 2, grocer_name: "QFC" }, ...]
+    ## we need the data formatted in this way because of how we construct
+    ## "layers" in D3 - where a layer corresponds to all bars
+    ## for any particular brand.
+    ## => layers will look through the grocers and grab all the values
+    ##    for each brand_id
+    ## e.g.
+    ## there will be a layer for brand # 1 that has a bar "5 wide"
+    ## and a bar "1 wide", and a layer for brand # 2 with a bar "0 wide"
+    ## and a bar "2 wide"
     query = <<-SQL
       select 
         G.id as id,
@@ -43,6 +59,9 @@ class Grocer < ApplicationRecord
     SQL
 
     data = ActiveRecord::Base.connection.execute(query)
+
+    ## at this point, data consists of many rows for a single grocer
+    ## we want to smush each brand-coupon-count into a single entry for each grocer
     flattened = {}
     ret = []
 
@@ -61,13 +80,50 @@ class Grocer < ApplicationRecord
     return ret
   end
 
-  ## for active coupons over time line chart
-  def coupons_by_brand
-    self
-      .coupons
-      .joins(product: [:brand])
-      .order(:expiration_date)
-      .pluck(:id, :brand_id, :activation_date, :expiration_date)
-      .map { |coupon| { id: coupon[0], brand_id: coupon[1], activation_date: coupon[2], expiration_date: coupon[3] }}
+  def self.active_over_time
+    query = <<-SQL
+    select 
+      G.name as grocer_name,
+      C.id as coupon_id, 
+      C.activation_date as activation_date, 
+      C.expiration_date as expiration_date
+    from grocers G
+    join stores S
+    on G.id = S.grocer_id
+    join coupons C
+    on S.id = C.store_id;
+    SQL
+     
+    data = ActiveRecord::Base.connection.execute(query)
+
+    ## at this point, data has a single row for each coupon (many with same grocer id)
+    ## we want an array where each grocer is represented once,
+    ## and their coupons are encapsulated in an array
+    flattened = {}
+    ret = []
+
+    data.each do |row|
+      if flattened[row["grocer_name"]]
+        flattened[row["grocer_name"]].push(
+          { 
+            activation_date: row["activation_date"], 
+            expiration_date: row["expiration_date"] 
+          }
+        )
+      else
+        flattened[row["grocer_name"]] = [
+          {
+            activation_date: row["activation_date"], 
+            expiration_date: row["expiration_date"] 
+          }
+        ]
+      end
+    end
+
+    flattened.each do |grocer_name, coupons|
+      ret.push({ name: grocer_name, coupons: coupons })
+    end
+
+    return ret
   end
 end
