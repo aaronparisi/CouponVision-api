@@ -2,13 +2,16 @@
 #
 # Table name: grocers
 #
-#  id              :bigint           not null, primary key
-#  max_num_coupons :integer
-#  name            :string
-#  num_brands      :integer
-#  num_stores      :integer
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
+#  id                        :bigint           not null, primary key
+#  earliest_activation_date  :date
+#  latest_activation_date    :date
+#  max_activation_days       :integer
+#  max_num_coupons_per_store :integer
+#  name                      :string
+#  num_brands                :integer
+#  num_stores                :integer
+#  created_at                :datetime         not null
+#  updated_at                :datetime         not null
 #
 
 class Grocer < ApplicationRecord
@@ -68,24 +71,3 @@ class Grocer < ApplicationRecord
       .map { |coupon| { id: coupon[0], brand_id: coupon[1], activation_date: coupon[2], expiration_date: coupon[3] }}
   end
 end
-
-=begin
-Grocer.left_outer_joins(stores: [coupons: [product: [:brand]]]).group(:brand_id, :id).count(:coupon_id)
-Store.joins(:coupon)
-
-select 
-  G.id as id,
-  G.name as name, 
-  B.id as brand_id, 
-  B.name as brand_name,
-  count(case S.grocer_id when C.id then 1 else null end) as num_coupons
-from "grocers" as G, "brands" as B
-inner join "products" P
-  on P.brand_id = B.id
-inner join "coupons" as C
-  on C.product_id = P.id
-inner join "stores" as S
-  on S.id = C.store_id
-group by G.id, B.id
-order by G.name, B.name;
-=end

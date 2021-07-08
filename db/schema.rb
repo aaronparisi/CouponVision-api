@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_07_042324) do
+ActiveRecord::Schema.define(version: 2021_07_08_223220) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,9 +22,6 @@ ActiveRecord::Schema.define(version: 2021_07_07_042324) do
     t.decimal "min_coupon_value"
     t.decimal "max_coupon_value"
     t.integer "num_products"
-    t.date "earliest_activation_date"
-    t.date "latest_activation_date"
-    t.integer "max_activation_days"
   end
 
   create_table "coupons", force: :cascade do |t|
@@ -55,7 +52,10 @@ ActiveRecord::Schema.define(version: 2021_07_07_042324) do
     t.datetime "updated_at", precision: 6, null: false
     t.integer "num_brands"
     t.integer "num_stores"
-    t.integer "max_num_coupons"
+    t.integer "max_num_coupons_per_store"
+    t.date "earliest_activation_date"
+    t.date "latest_activation_date"
+    t.integer "max_activation_days"
   end
 
   create_table "products", force: :cascade do |t|
