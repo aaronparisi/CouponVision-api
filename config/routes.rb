@@ -28,6 +28,7 @@ Rails.application.routes.draw do
 
     get 'coupon_counts_by_brand', to: 'grocers#coupon_counts_by_brand'
     get 'active_coupons_over_time', to: 'grocers#active_coupons_over_time'
+    get 'savings_by_brand', to: 'brands#savings_by_brand'
 
     # resources :products do
       

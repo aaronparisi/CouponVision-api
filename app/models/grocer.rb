@@ -93,7 +93,12 @@ class Grocer < ApplicationRecord
     join coupons C
     on S.id = C.store_id;
     SQL
-     
+    ## atodo maybe just do this with active record query methods...
+    ## the issue is that Grocer.joins(:coupons).pluck(:name, ...)
+    ## doesn't return an object with keys
+    ## we could try doing a reduce on the results of the query,
+    ## but it's tedius to find out if the accumulator has
+    ## an object with the grocer name already is all
     data = ActiveRecord::Base.connection.execute(query)
 
     ## at this point, data has a single row for each coupon (many with same grocer id)
