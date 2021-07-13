@@ -28,24 +28,6 @@ class Brand < ApplicationRecord
   # obsolete
 
   def self.savings_by_brand
-    query = <<-SQL
-      select
-        B.name as brand_name,
-        C.activation_date as activation_date,
-        C.expiration_date as expiration_date,
-        C.savings as savings,
-        S.state
-      from brands B
-      join products P
-      on B.id = P.brand_id
-      join coupons C
-      on P.id = C.product_id
-      join stores S
-      on S.id = C.store_id
-    SQL
-
-    # data = ActiveRecord::Base.connection.execute(query)
-
     data = self
       .joins(products: [coupons: [:store]])
       .pluck(

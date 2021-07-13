@@ -88,7 +88,6 @@ class Grocer < ApplicationRecord
   end
 
   def self.active_over_time
-
     data = self
       .joins(stores: [:coupons])
       .pluck(
