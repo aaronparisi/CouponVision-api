@@ -8,7 +8,7 @@ data.world's [Grocery Store Data](https://data.world/usda/grocery-stores)
 
 /////////////////////////////////////////////////////
 
-My Notes:
+## My Notes:
 
 - models
   - brands
