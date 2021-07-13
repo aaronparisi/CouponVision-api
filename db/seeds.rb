@@ -1,25 +1,3 @@
-## anote
-## these seeds were designed with the "active coupons over time"
-## and the "coupon counts per brand" visualizations in mind
-## => active coupons over time:
-##    - grocers have a range of dates in which coupons can be activated,
-##      and a maximum number of days for which they can be active,
-##      (ideally resulting in varying 'peaks')
-##    - grocers have a maximum number of coupons they can possibly have via their stores,
-##      (resulting in lines of differing maximum heights)
-## => coupon counts per brand
-##    - grocers having max number of coupons => different sizes of bars
-##    - grocers have a max number of brands represented
-##      (bars with different numbers of colors in them)
-##
-## anote
-## ideas for other aggregations:
-## - US state map where color intensity represents amount of money
-##   to be saved at a moment in time, or lost due to expiration,
-##   * include date slider
-##   * allow to toggle between saved & lost value, filter by grocers
-##     or brands
-
 require 'roo'
 
 dataPath = File.join(Rails.root, 'lib', 'Grocery_UPC_Database.xlsx')

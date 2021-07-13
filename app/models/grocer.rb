@@ -23,83 +23,79 @@ class Grocer < ApplicationRecord
 
   ## for counts per brand stacked bar chart
   def self.coupon_counts_by_brand
-    ## the goal here is to return a set of data consisting of
-    ## arrays of objects
-    ## each object represents a grocer
-    ## and will have keys for grocer name,
-    ## as well as a key-value pair representing each brand id
-    ## and corresponding coupon count for said grocer
-    ## e.g.
-    ## [{ 1: 5, 2: 0, grocer_name: "Albertson's" }, { 1: 1, 2: 2, grocer_name: "QFC" }, ...]
-    ## we need the data formatted in this way because of how we construct
-    ## "layers" in D3 - where a layer corresponds to all bars
-    ## for any particular brand.
-    ## => layers will look through the grocers and grab all the values
-    ##    for each brand_id
-    ## e.g.
-    ## there will be a layer for brand # 1 that has a bar "5 wide"
-    ## and a bar "1 wide", and a layer for brand # 2 with a bar "0 wide"
-    ## and a bar "2 wide"
-    query = <<-SQL
-      select 
-        G.id as id,
-        G.name as grocer_name, 
-        B.id as brand_id, 
-        B.name as brand_name,
-        count(case S.grocer_id when G.id then 1 else null end) as coupon_count
-      from "grocers" as G, "brands" as B
-      inner join "products" P
-        on P.brand_id = B.id
-      inner join "coupons" as C
-        on C.product_id = P.id
-      inner join "stores" as S
-        on S.id = C.store_id
-      group by G.id, B.id
-      order by G.name, B.name;
-    SQL
+    ## anote
+    ## originally I executed this query because I thought I needed
+    ## to send back grocer objects in which EVERY brand was represented
+    ## regardless of whether or not any particular grocer
+    ## actually had coupons for that brand
+    ## It seems, however, that the stack generator in the react component
+    ## does not need to explicitly see a '0' count for a key;
+    ## the absence of the key leads to a bar of width 0
 
-    data = ActiveRecord::Base.connection.execute(query)
+    # query = <<-SQL
+    #   select 
+    #     G.id as id,
+    #     G.name as grocer_name, 
+    #     B.id as brand_id, 
+    #     B.name as brand_name,
+    #     count(case S.grocer_id when G.id then 1 else null end) as coupon_count
+    #   from "grocers" as G, "brands" as B
+    #   inner join "products" P
+    #     on P.brand_id = B.id
+    #   inner join "coupons" as C
+    #     on C.product_id = P.id
+    #   inner join "stores" as S
+    #     on S.id = C.store_id
+    #   group by G.id, B.id
+    #   order by G.name, B.name;
+    # SQL
+
+    # data = ActiveRecord::Base.connection.execute(query)
+    data = self
+      .joins(coupons: [product: [:brand]])
+      .group("grocers.id", "brands.id")
+      .pluck(
+        "grocers.name as grocer_name", 
+        "brands.id as brand_id",
+        "count(coupons.id) as coupon_count"
+      )
 
     ## at this point, data consists of many rows for a single grocer
     ## we want to smush each brand-coupon-count into a single entry for each grocer
+    ## anote I thought it was easier to put everything in an object
+    ##       with grocer_names as keys
+    ##       as opposed to going right to the final array,
+    ##       where I'd have to be continuously looking for the index
+    ##       of some object in the array whose grocer_name key
+    ##       had a particular value
+    ## ???? is there a way to do this in the query itself?
     flattened = {}
     ret = []
 
     data.each do |grocer|
-      if flattened[grocer["grocer_name"]]
-        flattened[grocer["grocer_name"]][grocer["brand_id"]] = grocer["coupon_count"]
+      if flattened[grocer[0]]
+        flattened[grocer[0]][grocer[1]] = grocer[2]
       else
-        flattened[grocer["grocer_name"]] = { grocer["brand_id"] => grocer["coupon_count"] }
+        flattened[grocer[0]] = { grocer[1] => grocer[2] }
       end
     end
 
     flattened.each do |grocer_name, counts|
       ret.push({ grocer_name: grocer_name }.merge(counts))
     end
-
+    
     return ret
   end
 
   def self.active_over_time
-    query = <<-SQL
-    select 
-      G.name as grocer_name,
-      C.id as coupon_id, 
-      C.activation_date as activation_date, 
-      C.expiration_date as expiration_date
-    from grocers G
-    join stores S
-    on G.id = S.grocer_id
-    join coupons C
-    on S.id = C.store_id;
-    SQL
-    ## atodo maybe just do this with active record query methods...
-    ## the issue is that Grocer.joins(:coupons).pluck(:name, ...)
-    ## doesn't return an object with keys
-    ## we could try doing a reduce on the results of the query,
-    ## but it's tedius to find out if the accumulator has
-    ## an object with the grocer name already is all
-    data = ActiveRecord::Base.connection.execute(query)
+
+    data = self
+      .joins(stores: [:coupons])
+      .pluck(
+        "grocers.name as grocer_name",
+        "coupons.activation_date as activation_date",
+        "coupons.expiration_date as expiration_date"
+      )
 
     ## at this point, data has a single row for each coupon (many with same grocer id)
     ## we want an array where each grocer is represented once,
@@ -108,18 +104,18 @@ class Grocer < ApplicationRecord
     ret = []
 
     data.each do |row|
-      if flattened[row["grocer_name"]]
-        flattened[row["grocer_name"]].push(
+      if flattened[row[0]]
+        flattened[row[0]].push(
           { 
-            activation_date: row["activation_date"], 
-            expiration_date: row["expiration_date"] 
+            activation_date: row[1], 
+            expiration_date: row[2] 
           }
         )
       else
-        flattened[row["grocer_name"]] = [
+        flattened[row[0]] = [
           {
-            activation_date: row["activation_date"], 
-            expiration_date: row["expiration_date"] 
+            activation_date: row[1], 
+            expiration_date: row[2] 
           }
         ]
       end

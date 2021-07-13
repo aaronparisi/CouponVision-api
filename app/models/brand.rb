@@ -44,40 +44,50 @@ class Brand < ApplicationRecord
       on S.id = C.store_id
     SQL
 
-    data = ActiveRecord::Base.connection.execute(query)
+    # data = ActiveRecord::Base.connection.execute(query)
 
+    data = self
+      .joins(products: [coupons: [:store]])
+      .pluck(
+        "brands.name as brand_name",
+        "coupons.activation_date as activation_date",
+        "coupons.expiration_date as expiration_date",
+        "coupons.savings as savings",
+        "stores.state as state"
+      )
+    
     flattened = {}
     children = []
 
     data.each do |row|
-      if flattened[row["brand_name"]]
-        if flattened[row["brand_name"]][row["state"]]
-          flattened[row["brand_name"]][row["state"]].push(
+      if flattened[row[0]]
+        if flattened[row[0]][row[4]]
+          flattened[row[0]][row[4]].push(
             {
-              state: row["state"],
-              activation_date: row["activation_date"], 
-              expiration_date: row["expiration_date"],
-              savings: row["savings"]
+              state: row[4],
+              activation_date: row[1], 
+              expiration_date: row[2],
+              savings: row[3]
             }
           )
         else
-          flattened[row["brand_name"]][row["state"]] = [
+          flattened[row[0]][row[4]] = [
             { 
-              state: row["state"],
-              activation_date: row["activation_date"], 
-              expiration_date: row["expiration_date"],
-              savings: row["savings"]
+              state: row[4],
+              activation_date: row[1], 
+              expiration_date: row[2],
+              savings: row[3]
             }
           ]
         end
       else
-        flattened[row["brand_name"]] = {}
-        flattened[row["brand_name"]][row["state"]] = [
+        flattened[row[0]] = {}
+        flattened[row[0]][row[4]] = [
           {
-            state: row["state"],
-            activation_date: row["activation_date"], 
-            expiration_date: row["expiration_date"],
-            savings: row["savings"]
+            state: row[4],
+            activation_date: row[1], 
+            expiration_date: row[2],
+            savings: row[3]
           }
         ]
       end
