@@ -6,6 +6,97 @@ Murat Kemalder's [Using React (Hooks) with D3](https://dev.to/muratkemaldar/vide
 Steve Hall's [React Compact Slider](https://codesandbox.io/s/rw97j317p)
 data.world's [Grocery Store Data](https://data.world/usda/grocery-stores)
 
+.....................................................
+My Notes:
+
+- models
+  - brands
+  - products
+    => products no longer have categories, but they do have brands
+  - grocers
+  - grocer_brands
+    => grocers' coupons will only come from a subset of brands
+    => add validations for that on coupon creation
+  - stores
+  - coupons
+    => coupons belong to a store and to a product
+
+/////////////////////////////////////////////////////
+
+- seeds
+  - these seeds were designed with the "active coupons over time"
+    and the "coupon counts per brand" visualizations in mind
+  => active coupons over time:
+    - grocers have a range of dates in which coupons can be activated,
+      and a maximum number of days for which they can be active,
+      (ideally resulting in varying 'peaks')
+    - grocers have a maximum number of coupons they can possibly have via their stores,
+      (resulting in lines of differing maximum heights)
+  => coupon counts per brand
+    - grocers having max number of coupons => different sizes of bars
+    - grocers have a max number of brands represented
+      (bars with different numbers of colors in them)
+
+  => ideas for other aggregations:
+  - US state map where color intensity represents amount of money
+    to be saved at a moment in time, or lost due to expiration,
+    * include date slider
+    * allow to toggle between saved & lost value, filter by grocers
+      or brands
+
+/////////////////////////////////////////////////////
+
+- routes
+  => one route per data visualization
+
+/////////////////////////////////////////////////////
+
+- grocers controller
+  => grocer model coupon_counts_by_brand
+    the goal here is to return a set of data consisting of arrays of objects
+    - each object represents a grocer
+      its key-value pairs will consist of:
+      1. the grocer name
+      2. the coupon counts for each brand_id in the database
+    e.g.
+    [
+     { 1: 5, 2: 0, ..., grocer_name: "Albertson's" }, 
+     { 1: 1, 2: 2, ..., grocer_name: "QFC" }, 
+     .
+     .
+     .
+    ]
+    - we need the data formatted in this way because of how we construct
+      "layers" in D3 - where a layer corresponds to all same-colored "bars"
+      for any particular brand.
+    => when constructing the layers,
+       D3 will look through the grocers and grab all the values for each brand_id
+    e.g.
+    a layer for brand # 1 with a green bar "5 wide" and a green bar "1 wide", and 
+    a layer for brand # 2 with a red   bar "0 wide" and a red   bar "2 wide"
+
+    => I spent a lot of time figuring out how to construct a custom
+       sql query for coupon counts by brand because I:
+       1. made the mistake of thiking ALL brands must be represented
+          as a key in a grocer object even if that grocer
+          had 0 coupons in said brand, and
+       2. I didn't know how to use .pluck() effectively with .joins()
+    
+    => I don't think it's necessary to use .includes() here
+       since I just grab all the column names I need
+       and don't do any additional querying 
+
+  => grocer model active_over_time
+
+  TODO
+  each one of these queries is "flattened" in a ~similar~ way
+  I could spend some time abstracting / improving that
+
+/////////////////////////////////////////////////////
+
+- brands controller
+......................................................
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) template.
 
 ## Available Scripts
