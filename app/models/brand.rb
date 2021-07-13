@@ -53,7 +53,8 @@ class Brand < ApplicationRecord
       if flattened[row["brand_name"]]
         if flattened[row["brand_name"]][row["state"]]
           flattened[row["brand_name"]][row["state"]].push(
-            { 
+            {
+              state: row["state"],
               activation_date: row["activation_date"], 
               expiration_date: row["expiration_date"],
               savings: row["savings"]
@@ -62,6 +63,7 @@ class Brand < ApplicationRecord
         else
           flattened[row["brand_name"]][row["state"]] = [
             { 
+              state: row["state"],
               activation_date: row["activation_date"], 
               expiration_date: row["expiration_date"],
               savings: row["savings"]
@@ -72,6 +74,7 @@ class Brand < ApplicationRecord
         flattened[row["brand_name"]] = {}
         flattened[row["brand_name"]][row["state"]] = [
           {
+            state: row["state"],
             activation_date: row["activation_date"], 
             expiration_date: row["expiration_date"],
             savings: row["savings"]
