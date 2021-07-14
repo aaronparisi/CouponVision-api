@@ -6,4 +6,9 @@ class Api::BrandsController < ApplicationController
     @brands = Brand.savings_by_brand
     render json: @brands
   end
+
+  def savings_tiers_by_brand
+    @brands = Brand.savings_tiers_by_brand
+    render json: @brands
+  end
 end

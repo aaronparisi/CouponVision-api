@@ -87,4 +87,94 @@ class Brand < ApplicationRecord
       children: children
     }
   end
+
+  def self.calcTierIdx(savings, numTiers, tiers)
+    (1..numTiers).each do |idx|
+      return idx if (savings >= tiers[idx][:tierMin] && savings < tiers[idx][:tierMax])
+    end
+
+    return numTiers
+  end
+
+  def self.savings_tiers_by_brand
+    ## construct tiers
+    tiers = {}
+    savings = Coupon.pluck("min(coupons.savings) as minSavings", "max(coupons.savings) as maxSavings")
+    minSavings = savings[0][0].floor(-1).to_i
+    maxSavings = savings[0][1].ceil(-1).to_i
+    numTiers = 5  ## adjustable?
+    tierRange = (maxSavings - minSavings) / numTiers  ## the "length" of a single tier
+
+    (1..numTiers).each do |idx|
+      tiers[idx] = {
+        tierMin: minSavings + (tierRange * idx),
+        tierMax: minSavings + (tierRange * (idx+1))
+      }
+    end
+
+    ## query data
+    data = self
+      .joins(products: [coupons: [:store]])
+      .pluck(
+        "brands.name as brand_name",
+        "coupons.activation_date as activation_date",
+        "coupons.expiration_date as expiration_date",
+        "coupons.savings as savings",
+      )
+    
+    flattened = {}
+    children = []
+
+    data.each do |row|
+      ## calculate "savings tier"
+      tierIdx = calcTierIdx(row[3], numTiers, tiers)
+
+      if flattened[row[0]]  ## if brand object already exists
+        if flattened[row[0]][tierIdx]  ## if "savings tier" already exists
+          flattened[row[0]][tierIdx].push(
+            {
+              tier_idx: tierIdx,
+              activation_date: row[1], 
+              expiration_date: row[2],
+              savings: row[3]
+            }
+          )
+        else
+          flattened[row[0]][tierIdx] = [
+            { 
+              tier_idx: tierIdx,
+              activation_date: row[1],
+              expiration_date: row[2],
+              savings: row[3]
+            }
+          ]
+        end
+      else
+        flattened[row[0]] = {}
+        flattened[row[0]][tierIdx] = [
+          {
+            tierIdx: tierIdx,
+            activation_date: row[1], 
+            expiration_date: row[2],
+            savings: row[3]
+          }
+        ]
+      end
+    end
+
+    flattened.each do |brand_name, coupons|
+      children.push({ 
+        name: brand_name, 
+        children: coupons.map { |tier_idx, coupons| { name: tier_idx, children: coupons }}
+      })
+    end
+    
+    return {
+      tiers: tiers,
+      treeData: {
+        name: "brands",
+        children: children
+      }
+    }
+  end
 end
