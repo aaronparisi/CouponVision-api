@@ -7,10 +7,10 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
       'http://coupon-vision.web.app',
       'https://www.coupon-vision.web.app',
       'http://www.coupon-vision.web.app',
-      'https://coupons.aaronparisidev.com',
-      'http://coupons.aaronparisidev.com',
-      'https://www.coupons.aaronparisidev.com',
-      'http://www.coupons.aaronparisidev.com'
+      'https://coupons.aaronparisi.dev',
+      'http://coupons.aaronparisi.dev',
+      'https://www.coupons.aaronparisi.dev',
+      'http://www.coupons.aaronparisi.dev'
 
     resource '*',
       headers: :any,
